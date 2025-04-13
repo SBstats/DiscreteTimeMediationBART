@@ -133,9 +133,6 @@ FitBARTCompEvent <- function(data, # Dataframe in temporal order: L0, Z,L,M,Y,D
                              Nskip = 1000, # Number of burn-in samples. Default is set to 100.
                              Ntree = 100, # Number of trees. Default is set to 100.
                              Keepevery = 10, # Keep every k:th draw. Default is set to 1.
-                             Suppress = TRUE, # Indicates if the output should be suppressed. Default is TRUE
-                             By = Ndraws/10, # If Suppress is set to FALSE, output is provided for the By:th iteration.
-                             Sparse = TRUE, # Indicates if the sparse dirichlet hyper prior should be used. Default is TRUE
                              ...
 ){
   
@@ -216,9 +213,6 @@ MCIntegCompEvent <- function(data, # Dataframe in temporal order: L0, Y,Z,L,M,..
                              #Nskip = 100, # Number of burn-in samples. Default is set to 100.
                              #Ntree = 100, # Number of trees. Default is set to 100.
                              #Keepevery = 1, # Keep every k:th draw. Default is set to 1.
-                             Suppress = TRUE, # Indicates if the output should be suppressed. Default is TRUE
-                             By = Ndraws/10, # If Suppress is set to FALSE, output is provided for the By:th iteration.
-                             Sparse = TRUE, # Indicates if the sparse dirichlet hyper prior should be used. Default is TRUE
                              ...
 ){
   
@@ -331,9 +325,13 @@ MCIntegCompEvent <- function(data, # Dataframe in temporal order: L0, Y,Z,L,M,..
         x_trt <- pred_comb_mediator(continuous[j], BModels[[j - 1]], x_trt, x_control, it)
         x_control <- pred_comb(continuous[j], BModels[[j - 1]], x_control, it)
       }
-      else if(var.type[j] == "Y1" & k==1) {
+      else if(var.type[j] == "Y1") {
         Ykprob_trt_it <- pred_surv(BModels[[j - 1]], x_trt, it) #failure probablity
         Ykprob_control_it <- pred_surv(BModels[[j - 1]], x_control, it) #failure probablity
+        if(k==1){
+          Pk_zzstar_mat[m,it] <- mean(Ykprob_trt_it)
+          m <- m+1
+        }
         surv_hat_trt <- 1- as.numeric(Ykprob_trt_it)
         surv_hat_control <- 1- as.numeric(Ykprob_control_it)
         if(!is.null(s_hat)){
@@ -343,22 +341,23 @@ MCIntegCompEvent <- function(data, # Dataframe in temporal order: L0, Y,Z,L,M,..
           s_temp_trt <- surv_hat_trt
           s_temp_control <- surv_hat_control
         }
-        
-        Pk_zzstar_mat[m,it] <- mean(Ykprob_trt_it)
-        m <- m+1
         surv_trt <- rbinom(length(surv_hat_trt),1,prob = surv_hat_trt)
-        
         surv_control <- rbinom(length(surv_hat_trt),1,prob = surv_hat_control)
         x_trt <- cbind(x_trt, surv_trt)
-        
+        #x_trt <- Map(function(a,b){a[b==1,]},x_trt,surv_trt)
         x_trt <- x_trt[surv_trt==1,]
         x_control <- cbind(x_control, surv_control)
+        #x_control <- Map(function(a,b){a[b==1,]},x_control,surv_control)
         x_control <- x_control[surv_trt==1,]
         s_hat <- s_temp_trt[surv_trt==1]
       }
-      else if(var.type[j] == "Y2" & k==2) {
+      else if(var.type[j] == "Y2") {
         Ykprob_trt_it <- pred_surv(BModels[[j - 1]], x_trt, it) #failure probablity
         Ykprob_control_it <- pred_surv(BModels[[j - 1]], x_control, it) #failure probablity
+        if(k==2){
+          Pk_zzstar_mat[m,it] <- mean(Ykprob_trt_it)
+          m <- m+1
+        }
         surv_hat_trt <- 1- as.numeric(Ykprob_trt_it)
         surv_hat_control <- 1- as.numeric(Ykprob_control_it)
         if(!is.null(s_hat)){
@@ -368,9 +367,8 @@ MCIntegCompEvent <- function(data, # Dataframe in temporal order: L0, Y,Z,L,M,..
           s_temp_trt <- surv_hat_trt
           s_temp_control <- surv_hat_control
         }
-        Pk_zzstar_mat[m,it] <- mean(Ykprob_trt_it)
-        m <- m+1
         surv_trt <- rbinom(length(surv_hat_trt),1,prob = surv_hat_trt)
+        #cat("Out of", J, "MC samples, the number of people alive at visit",m-1, "of iteration", it,":", sum(surv_trt), "\n")
         surv_control <- rbinom(length(surv_hat_trt),1,prob = surv_hat_control)
         x_trt <- cbind(x_trt, surv_trt)
         x_trt <- x_trt[surv_trt==1,]
@@ -380,6 +378,7 @@ MCIntegCompEvent <- function(data, # Dataframe in temporal order: L0, Y,Z,L,M,..
       }
     }
   }
+  
   return(Pk_zzstar_mat)
 }
 

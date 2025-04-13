@@ -151,9 +151,6 @@ FitBART <- function(data, # Dataframe in temporal order: L0, Z,L,M,Y,D
                     Nskip = 100, # Number of burn-in samples. Default is set to 100.
                     Ntree = 100, # Number of trees. Default is set to 100.
                     Keepevery = 1, # Keep every k:th draw. Default is set to 1.
-                    Suppress = TRUE, # Indicates if the output should be suppressed. Default is TRUE
-                    By = Ndraws/10, # If Suppress is set to FALSE, output is provided for the By:th iteration.
-                    Sparse = TRUE, # Indicates if the sparse dirichlet hyper prior should be used. Default is TRUE
                     ...
 ){
   
@@ -224,9 +221,6 @@ MCInteg <- function(data, # Dataframe in temporal order: L0,Y, Z,L,M,...,Y,D
                     #Nskip = 100, # Number of burn-in samples. Default is set to 100.
                     #Ntree = 100, # Number of trees. Default is set to 100.
                     #Keepevery = 1, # Keep every k:th draw. Default is set to 1.
-                    Suppress = TRUE, # Indicates if the output should be suppressed. Default is TRUE
-                    By = Ndraws/10, # If Suppress is set to FALSE, output is provided for the By:th iteration.
-                    Sparse = TRUE, # Indicates if the sparse dirichlet hyper prior should be used. Default is TRUE
                     ...
 ){
   
